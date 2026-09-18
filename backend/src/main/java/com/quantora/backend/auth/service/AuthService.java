@@ -4,10 +4,10 @@ import com.quantora.backend.auth.dto.AuthResponse;
 import com.quantora.backend.auth.dto.LoginRequest;
 import com.quantora.backend.auth.dto.RefreshRequest;
 import com.quantora.backend.auth.dto.RegisterRequest;
-import com.quantora.backend.auth.dto.RegisterResponse;
 import com.quantora.backend.auth.dto.UserResponse;
 import com.quantora.backend.auth.exception.EmailAlreadyExistsException;
 import com.quantora.backend.auth.exception.InvalidCredentialsException;
+import com.quantora.backend.auth.exception.UnauthorizedException;
 import com.quantora.backend.auth.security.JwtService;
 import com.quantora.backend.auth.security.UserPrincipal;
 import com.quantora.backend.config.JwtProperties;
@@ -43,7 +43,7 @@ public class AuthService {
     }
 
     @Transactional
-    public RegisterResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) {
         String email = request.email();
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new EmailAlreadyExistsException(email);
@@ -59,13 +59,7 @@ public class AuthService {
 
         try {
             User savedUser = userRepository.saveAndFlush(user);
-            return new RegisterResponse(
-                    savedUser.getId(),
-                    savedUser.getFirstName(),
-                    savedUser.getLastName(),
-                    savedUser.getEmail(),
-                    savedUser.getRole()
-            );
+            return buildAuthResponse(savedUser);
         } catch (DataIntegrityViolationException ex) {
             throw new EmailAlreadyExistsException(email);
         }
@@ -93,6 +87,14 @@ public class AuthService {
     @Transactional
     public void logout(RefreshRequest request) {
         refreshTokenService.revokeRefreshToken(request.refreshToken());
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getCurrentUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .filter(u -> u.getDeletedAt() == null)
+                .orElseThrow(UnauthorizedException::new);
+        return UserResponse.from(user);
     }
 
     private AuthResponse buildAuthResponse(User user) {

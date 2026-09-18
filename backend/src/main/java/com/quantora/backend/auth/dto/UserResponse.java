@@ -8,7 +8,8 @@ public record UserResponse(
         String firstName,
         String lastName,
         String email,
-        Role role
+        Role role,
+        boolean onboardingCompleted
 ) {
 
     public static UserResponse from(User user) {
@@ -17,7 +18,8 @@ public record UserResponse(
                 user.getFirstName(),
                 user.getLastName(),
                 user.getEmail(),
-                user.getRole()
+                user.getRole(),
+                user.isOnboardingCompleted()
         );
     }
 }
