@@ -14,6 +14,7 @@ import com.quantora.backend.config.JwtProperties;
 import com.quantora.backend.user.entity.Role;
 import com.quantora.backend.user.entity.User;
 import com.quantora.backend.user.repository.UserRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,33 +42,38 @@ public class AuthService {
         this.refreshTokenService = refreshTokenService;
     }
 
+    @Transactional
     public RegisterResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new EmailAlreadyExistsException(request.email());
+        String email = request.email();
+        if (userRepository.existsByEmailIgnoreCase(email)) {
+            throw new EmailAlreadyExistsException(email);
         }
 
         User user = User.builder()
                 .firstName(request.firstName())
                 .lastName(request.lastName())
-                .email(request.email())
+                .email(email)
                 .password(passwordEncoder.encode(request.password()))
                 .role(Role.USER)
                 .build();
 
-        User savedUser = userRepository.save(user);
-
-        return new RegisterResponse(
-                savedUser.getId(),
-                savedUser.getFirstName(),
-                savedUser.getLastName(),
-                savedUser.getEmail(),
-                savedUser.getRole()
-        );
+        try {
+            User savedUser = userRepository.saveAndFlush(user);
+            return new RegisterResponse(
+                    savedUser.getId(),
+                    savedUser.getFirstName(),
+                    savedUser.getLastName(),
+                    savedUser.getEmail(),
+                    savedUser.getRole()
+            );
+        } catch (DataIntegrityViolationException ex) {
+            throw new EmailAlreadyExistsException(email);
+        }
     }
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.email())
+        User user = userRepository.findByEmailIgnoreCase(request.email())
                 .filter(u -> u.getDeletedAt() == null)
                 .orElseThrow(InvalidCredentialsException::new);
 
@@ -80,11 +86,7 @@ public class AuthService {
 
     @Transactional
     public AuthResponse refresh(RefreshRequest request) {
-        User user = refreshTokenService.verifyRefreshToken(request.refreshToken());
-
-        // Rotation : l'ancien refresh token est invalidé
-        refreshTokenService.revokeRefreshToken(request.refreshToken());
-
+        User user = refreshTokenService.consumeRefreshToken(request.refreshToken());
         return buildAuthResponse(user);
     }
 

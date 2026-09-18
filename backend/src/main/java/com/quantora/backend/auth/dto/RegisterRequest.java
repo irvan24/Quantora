@@ -5,8 +5,10 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.util.Locale;
+
 public record RegisterRequest(
-    
+
     @NotBlank(message = "First name is required")
     String firstName,
 
@@ -24,4 +26,17 @@ public record RegisterRequest(
     @AssertTrue(message = "You must accept the terms and conditions")
     Boolean termsAccepted
 ) {
+    public RegisterRequest {
+        firstName = trimToNull(firstName);
+        lastName = trimToNull(lastName);
+        email = normalizeEmail(email);
+    }
+
+    private static String trimToNull(String value) {
+        return value == null ? null : value.trim();
+    }
+
+    private static String normalizeEmail(String value) {
+        return value == null ? null : value.trim().toLowerCase(Locale.ROOT);
+    }
 }

@@ -41,17 +41,21 @@ public class RefreshTokenService {
         return rawToken;
     }
 
-    @Transactional(readOnly = true)
-    public User verifyRefreshToken(String rawToken) {
-        RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(hashToken(rawToken))
+    @Transactional
+    public User consumeRefreshToken(String rawToken) {
+        String tokenHash = hashToken(rawToken);
+        RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(tokenHash)
                 .orElseThrow(InvalidRefreshTokenException::new);
 
-        if (refreshToken.isRevoked() || refreshToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+        User user = refreshToken.getUser();
+        if (refreshToken.isRevoked()
+                || refreshToken.getExpiresAt().isBefore(LocalDateTime.now())
+                || user.getDeletedAt() != null) {
             throw new InvalidRefreshTokenException();
         }
 
-        User user = refreshToken.getUser();
-        if (user.getDeletedAt() != null) {
+        int revoked = refreshTokenRepository.revokeIfActive(tokenHash, LocalDateTime.now());
+        if (revoked != 1) {
             throw new InvalidRefreshTokenException();
         }
 
@@ -60,11 +64,7 @@ public class RefreshTokenService {
 
     @Transactional
     public void revokeRefreshToken(String rawToken) {
-        refreshTokenRepository.findByTokenHash(hashToken(rawToken))
-                .ifPresent(token -> {
-                    token.setRevoked(true);
-                    refreshTokenRepository.save(token);
-                });
+        refreshTokenRepository.revokeIfActive(hashToken(rawToken), LocalDateTime.now());
     }
 
     private String hashToken(String rawToken) {
