@@ -4,6 +4,7 @@ import com.quantora.backend.auth.exception.UnauthorizedException;
 import com.quantora.backend.onboarding.dto.OnboardingRequest;
 import com.quantora.backend.onboarding.dto.OnboardingResponse;
 import com.quantora.backend.onboarding.entity.OnboardingProfile;
+import com.quantora.backend.onboarding.enums.ContributionPeriod;
 import com.quantora.backend.onboarding.enums.ContributionPlan;
 import com.quantora.backend.onboarding.enums.InvestmentKnowledge;
 import com.quantora.backend.onboarding.repository.OnboardingProfileRepository;
@@ -72,6 +73,7 @@ public class OnboardingService {
         profile.setHighInterestDebt(request.highInterestDebt());
         profile.setContributionPlan(request.contributionPlan());
         profile.setMonthlyContribution(resolveMonthlyContribution(request));
+        profile.setContributionPeriod(resolveContributionPeriod(request));
         profile.setRiskReaction(request.riskReaction());
         profile.setExperience(request.experience());
         profile.setApproach(request.approach());
@@ -100,6 +102,13 @@ public class OnboardingService {
             return null;
         }
         return request.monthlyContribution();
+    }
+
+    private ContributionPeriod resolveContributionPeriod(OnboardingRequest request) {
+        if (request.contributionPlan() != ContributionPlan.REGULARLY) {
+            return null;
+        }
+        return request.contributionPeriod();
     }
 
     private boolean isComplete(OnboardingProfile profile) {

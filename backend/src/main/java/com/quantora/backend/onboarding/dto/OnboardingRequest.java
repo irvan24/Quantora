@@ -1,5 +1,6 @@
 package com.quantora.backend.onboarding.dto;
 
+import com.quantora.backend.onboarding.enums.ContributionPeriod;
 import com.quantora.backend.onboarding.enums.ContributionPlan;
 import com.quantora.backend.onboarding.enums.EmergencyFund;
 import com.quantora.backend.onboarding.enums.HighInterestDebt;
@@ -25,6 +26,7 @@ public record OnboardingRequest(
         @DecimalMin(value = "1.00", message = "Monthly contribution must be at least 1")
         @Digits(integer = 9, fraction = 2, message = "Monthly contribution must have at most 2 decimal places")
         BigDecimal monthlyContribution,
+        ContributionPeriod contributionPeriod,
         RiskReaction riskReaction,
         InvestingExperience experience,
         List<InvestmentKnowledge> knowledge,

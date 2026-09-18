@@ -1,6 +1,7 @@
 package com.quantora.backend.onboarding.dto;
 
 import com.quantora.backend.onboarding.entity.OnboardingProfile;
+import com.quantora.backend.onboarding.enums.ContributionPeriod;
 import com.quantora.backend.onboarding.enums.ContributionPlan;
 import com.quantora.backend.onboarding.enums.EmergencyFund;
 import com.quantora.backend.onboarding.enums.HighInterestDebt;
@@ -22,6 +23,7 @@ public record OnboardingResponse(
         HighInterestDebt highInterestDebt,
         ContributionPlan contributionPlan,
         BigDecimal monthlyContribution,
+        ContributionPeriod contributionPeriod,
         RiskReaction riskReaction,
         InvestingExperience experience,
         List<InvestmentKnowledge> knowledge,
@@ -32,6 +34,7 @@ public record OnboardingResponse(
 
     public static OnboardingResponse empty() {
         return new OnboardingResponse(
+                null,
                 null,
                 null,
                 null,
@@ -55,6 +58,7 @@ public record OnboardingResponse(
                 profile.getHighInterestDebt(),
                 profile.getContributionPlan(),
                 profile.getMonthlyContribution(),
+                profile.getContributionPeriod(),
                 profile.getRiskReaction(),
                 profile.getExperience(),
                 List.copyOf(profile.getKnowledge()),
