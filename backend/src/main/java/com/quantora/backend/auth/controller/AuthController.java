@@ -4,10 +4,14 @@ import com.quantora.backend.auth.dto.AuthResponse;
 import com.quantora.backend.auth.dto.LoginRequest;
 import com.quantora.backend.auth.dto.RefreshRequest;
 import com.quantora.backend.auth.dto.RegisterRequest;
-import com.quantora.backend.auth.dto.RegisterResponse;
+import com.quantora.backend.auth.dto.UserResponse;
+import com.quantora.backend.auth.exception.UnauthorizedException;
+import com.quantora.backend.auth.security.UserPrincipal;
 import com.quantora.backend.auth.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +30,7 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public RegisterResponse register(@Valid @RequestBody RegisterRequest request) {
+    public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
     }
 
@@ -44,5 +48,13 @@ public class AuthController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void logout(@Valid @RequestBody RefreshRequest request) {
         authService.logout(request);
+    }
+
+    @GetMapping("/me")
+    public UserResponse me(@AuthenticationPrincipal UserPrincipal principal) {
+        if (principal == null) {
+            throw new UnauthorizedException();
+        }
+        return authService.getCurrentUser(principal.getId());
     }
 }
