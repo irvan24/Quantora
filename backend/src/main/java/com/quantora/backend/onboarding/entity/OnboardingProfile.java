@@ -1,5 +1,6 @@
 package com.quantora.backend.onboarding.entity;
 
+import com.quantora.backend.onboarding.enums.ContributionPeriod;
 import com.quantora.backend.onboarding.enums.ContributionPlan;
 import com.quantora.backend.onboarding.enums.EmergencyFund;
 import com.quantora.backend.onboarding.enums.HighInterestDebt;
@@ -76,6 +77,10 @@ public class OnboardingProfile {
 
     @Column(name = "monthly_contribution", precision = 12, scale = 2)
     private BigDecimal monthlyContribution;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "contribution_period")
+    private ContributionPeriod contributionPeriod;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "risk_reaction")
