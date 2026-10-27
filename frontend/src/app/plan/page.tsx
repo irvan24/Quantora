@@ -1,5 +1,12 @@
-import PlaceholderPage from "@/components/app/placeholder-page";
+"use client";
+
+import { AppShell } from "@/components/app/app-shell";
+import { PlanView } from "@/components/plan/plan-view";
 
 export default function PlanPage() {
-  return <PlaceholderPage title="My Plan" body="Your investing plan will live here. This screen is next after Home." />;
+  return (
+    <AppShell hideHeader>
+      <PlanView />
+    </AppShell>
+  );
 }

@@ -15,6 +15,9 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
+    private static final String TOKEN_TYPE_CLAIM = "type";
+    private static final String ACCESS_TOKEN_TYPE = "access";
+
     private final JwtProperties jwtProperties;
 
     public JwtService(JwtProperties jwtProperties) {
@@ -29,7 +32,7 @@ public class JwtService {
                 .subject(userPrincipal.getUsername())
                 .claim("userId", userPrincipal.getId())
                 .claim("role", userPrincipal.getRole().name())
-                .claim("type", "access")
+                .claim(TOKEN_TYPE_CLAIM, ACCESS_TOKEN_TYPE)
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(getSigningKey())
@@ -41,23 +44,26 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        String email = extractEmail(token);
-        return email.equalsIgnoreCase(userDetails.getUsername())
-                && !isTokenExpired(token)
+        Claims claims = parseClaims(token);
+        String email = claims.getSubject();
+        return ACCESS_TOKEN_TYPE.equals(claims.get(TOKEN_TYPE_CLAIM, String.class))
+                && email != null
+                && email.equalsIgnoreCase(userDetails.getUsername())
+                && claims.getExpiration() != null
+                && claims.getExpiration().after(new Date())
                 && userDetails.isEnabled();
     }
 
-    private boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        return claimsResolver.apply(parseClaims(token));
     }
 
-    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        Claims claims = Jwts.parser()
+    private Claims parseClaims(String token) {
+        return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        return claimsResolver.apply(claims);
     }
 
     private SecretKey getSigningKey() {

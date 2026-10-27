@@ -1,7 +1,6 @@
 # --- Environment & secrets ---
 .env
 .env.*
-!.env.example
 # Machine-local Spring Boot overrides (picked up from the working directory)
 backend/config/
 

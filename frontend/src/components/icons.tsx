@@ -1,3 +1,5 @@
+import { ArrowRight, Check, Search, Sparkles } from "lucide-react";
+
 export function GoogleIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true">
@@ -18,35 +20,17 @@ export function AppleIcon() {
 }
 
 export function CheckIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6FA383" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 12.5 9.5 18 20 6.5" />
-    </svg>
-  );
+  return <Check size={13} strokeWidth={2.4} color="#6FA383" aria-hidden="true" />;
 }
 
 export function ArrowIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4.5 12h14M13 6.5l5.5 5.5L13 17.5" />
-    </svg>
-  );
+  return <ArrowRight size={15} strokeWidth={1.9} aria-hidden="true" />;
 }
 
 export function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" />
-      <path d="m16.5 16.5 4 4" />
-    </svg>
-  );
+  return <Search size={15} strokeWidth={1.8} className={className} aria-hidden="true" />;
 }
 
 export function SparkleIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8E9CE0" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 3.5l1.6 4.4 4.4 1.6-4.4 1.6L12 15.5l-1.6-4.4L6 9.5l4.4-1.6z" />
-      <path d="M18.5 16.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z" />
-    </svg>
-  );
+  return <Sparkles size={15} strokeWidth={1.7} color="#8E9CE0" aria-hidden="true" />;
 }

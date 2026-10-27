@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { postAuthPath } from "@/lib/auth";
+import { Eye, EyeOff } from "lucide-react";
 import { AppleIcon, GoogleIcon } from "@/components/icons";
 
 const inputClass =
@@ -110,13 +111,9 @@ export function AuthForm({ mode }: AuthFormProps) {
           <div className="flex items-center text-[12.5px] font-medium text-muted">
             <label htmlFor="password">Password</label>
             {!isSignup && (
-              <button
-                type="button"
-                className="ml-auto font-normal text-link hover:text-link-hover"
-                onClick={() => setError("Password reset isn’t available yet. Use the password you created.")}
-              >
+              <Link href="/forgot-password" className="ml-auto font-normal text-link hover:text-link-hover">
                 Forgot?
-              </button>
+              </Link>
             )}
           </div>
           <div className="relative flex">
@@ -124,6 +121,8 @@ export function AuthForm({ mode }: AuthFormProps) {
               id="password"
               required
               minLength={isSignup ? 8 : undefined}
+              pattern={isSignup ? "(?=.*[A-Za-z])(?=.*\\d).+" : undefined}
+              title={isSignup ? "At least 8 characters, including a letter and a number" : undefined}
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
@@ -133,13 +132,20 @@ export function AuthForm({ mode }: AuthFormProps) {
             />
             <button
               type="button"
-              className="absolute top-2 right-2 h-7 px-1.5 text-xs font-medium text-[#7C828B] hover:text-[#ECECE8]"
+              className="absolute top-2 right-2 flex h-7 w-8 items-center justify-center text-[#7C828B] hover:text-[#ECECE8]"
               onClick={() => setShowPassword((value) => !value)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? "Hide" : "Show"}
+              {showPassword ? (
+                <EyeOff size={16} strokeWidth={1.7} aria-hidden="true" />
+              ) : (
+                <Eye size={16} strokeWidth={1.7} aria-hidden="true" />
+              )}
             </button>
           </div>
-          {isSignup && <span className="text-xs text-faint">At least 8 characters.</span>}
+          {isSignup && (
+            <span className="text-xs text-faint">At least 8 characters, including a letter and a number.</span>
+          )}
         </div>
 
         {isSignup && (

@@ -1,5 +1,7 @@
 "use client";
 
+import { Check } from "lucide-react";
+
 type OptionCardProps = {
   selected: boolean;
   onClick: () => void;
@@ -38,9 +40,7 @@ export function OptionCard({
           <span className="pointer-events-none absolute inset-0 rounded-xl border-[1.5px] border-[#7C8CF8] bg-[rgba(124,140,248,0.06)]" />
           {check ? (
             <span className="absolute top-4 right-4 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#7C8CF8]">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0D0F12" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M4 12.5 9.5 18 20 6.5" />
-              </svg>
+              <Check size={10} strokeWidth={3.4} color="#0D0F12" aria-hidden="true" />
             </span>
           ) : null}
         </>

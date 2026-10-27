@@ -8,6 +8,7 @@ import com.quantora.backend.onboarding.enums.InvestingApproach;
 import com.quantora.backend.onboarding.enums.InvestingExperience;
 import com.quantora.backend.onboarding.enums.InvestmentGoal;
 import com.quantora.backend.onboarding.enums.InvestmentKnowledge;
+import com.quantora.backend.onboarding.enums.ReviewCadence;
 import com.quantora.backend.onboarding.enums.RiskReaction;
 import com.quantora.backend.onboarding.enums.TimeHorizon;
 import com.quantora.backend.user.entity.User;
@@ -23,6 +24,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -35,7 +37,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -104,6 +108,32 @@ public class OnboardingProfile {
     @Enumerated(EnumType.STRING)
     @Column(name = "approach")
     private InvestingApproach approach;
+
+    @Column(name = "allocation_etfs")
+    private Integer allocationEtfs;
+
+    @Column(name = "allocation_stocks")
+    private Integer allocationStocks;
+
+    @Column(name = "allocation_bonds")
+    private Integer allocationBonds;
+
+    @Column(name = "allocation_cash")
+    private Integer allocationCash;
+
+    @Builder.Default
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "onboarding_rules",
+            joinColumns = @JoinColumn(name = "onboarding_id")
+    )
+    @OrderColumn(name = "position")
+    @Column(name = "body", nullable = false, length = 280)
+    private List<String> rules = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "review_cadence")
+    private ReviewCadence reviewCadence;
 
     @Column(nullable = false)
     private boolean completed;

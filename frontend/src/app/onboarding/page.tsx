@@ -10,12 +10,19 @@ export default function OnboardingPage() {
   const { user, ready } = useAuth();
 
   useEffect(() => {
-    if (ready && !user) {
+    if (!ready) {
+      return;
+    }
+    if (!user) {
       router.replace("/login");
+      return;
+    }
+    if (user.onboardingCompleted) {
+      router.replace("/home");
     }
   }, [ready, user, router]);
 
-  if (!ready || !user) {
+  if (!ready || !user || user.onboardingCompleted) {
     return <div className="min-h-screen bg-[#0D0F12]" />;
   }
 

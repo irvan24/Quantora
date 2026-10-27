@@ -1,0 +1,17 @@
+# Production profile: versioned schema via Flyway, no Hibernate DDL changes.
+spring:
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+server:
+  forward-headers-strategy: native
+
+quantora:
+  auth:
+    cookies:
+      enabled: true
+      secure: true

@@ -1,5 +1,12 @@
-import PlaceholderPage from "@/components/app/placeholder-page";
+"use client";
+
+import { AppShell } from "@/components/app/app-shell";
+import { LearnCatalog } from "@/components/learn/learn-catalog";
 
 export default function LearnPage() {
-  return <PlaceholderPage title="Learn" body="Short lessons on risk, diversification and ETFs will start here." />;
+  return (
+    <AppShell hideHeader>
+      <LearnCatalog />
+    </AppShell>
+  );
 }

@@ -1,5 +1,6 @@
 package com.quantora.backend.auth.security;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,12 +42,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String authHeader = request.getHeader(AUTHORIZATION_HEADER);
 
-        if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
+        String jwt = null;
+        if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+            jwt = authHeader.substring(BEARER_PREFIX.length());
+        } else {
+            Cookie accessCookie = AuthCookieService.readCookie(request, AuthCookieService.ACCESS_COOKIE);
+            if (accessCookie != null && accessCookie.getValue() != null && !accessCookie.getValue().isBlank()) {
+                jwt = accessCookie.getValue();
+            }
+        }
+
+        if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        String jwt = authHeader.substring(BEARER_PREFIX.length());
 
         try {
             String email = jwtService.extractEmail(jwt);
@@ -64,7 +73,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            // Expired, tampered or otherwise invalid token: treat the request as anonymous
+            // (fail closed). The entry point will answer 401 for protected routes.
+            logger.debug("Rejected bearer token: " + ex.getClass().getSimpleName());
             SecurityContextHolder.clearContext();
         }
 

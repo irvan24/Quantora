@@ -1,0 +1,39 @@
+# Test profile: in-memory H2 in PostgreSQL compatibility mode so the suite runs
+# without Docker. Values below are test fixtures, not secrets.
+spring:
+  flyway:
+    enabled: false
+
+  datasource:
+    url: jdbc:h2:mem:quantora;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+jwt:
+  secret: test-only-jwt-secret-0123456789-abcdefghijklmnopqrstuvwxyz
+  expiration-ms: 900000
+  refresh-expiration-ms: 604800000
+
+cors:
+  allowed-origin-patterns: http://localhost:*
+
+quantora:
+  security:
+    max-request-body-bytes: 65536
+    rate-limit:
+      enabled: true
+      window: 1m
+      auth-requests-per-ip: 1000
+      login-attempts-per-email: 1000
+  market-data:
+    provider: stub
+    cache-ttl: 1h
+    fmp:
+      base-url: http://localhost
+      api-key: test

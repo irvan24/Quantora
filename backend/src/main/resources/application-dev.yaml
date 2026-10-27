@@ -1,0 +1,33 @@
+# Local development only. Activate explicitly: SPRING_PROFILES_ACTIVE=dev
+# Values here are deliberately permissive and are rejected outside the
+# dev/test profiles (see SecurityConfigurationValidator).
+# Override any of them with environment variables, or drop a git-ignored
+# backend/config/application-dev.yaml next to the project for machine-specific
+# settings (e.g. a different Postgres port).
+spring:
+  flyway:
+    enabled: false
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/quantora}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+jwt:
+  secret: ${JWT_SECRET:quantora-dev-secret-key-change-in-production-min-32-chars}
+
+cors:
+  allowed-origin-patterns: "${CORS_ALLOWED_ORIGINS:http://localhost:*,http://127.0.0.1:*}"
+
+quantora:
+  auth:
+    password-reset:
+      expose-token-in-response: true

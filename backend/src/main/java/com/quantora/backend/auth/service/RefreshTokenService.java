@@ -41,16 +41,22 @@ public class RefreshTokenService {
         return rawToken;
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = InvalidRefreshTokenException.class)
     public User consumeRefreshToken(String rawToken) {
         String tokenHash = hashToken(rawToken);
         RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(tokenHash)
                 .orElseThrow(InvalidRefreshTokenException::new);
 
         User user = refreshToken.getUser();
-        if (refreshToken.isRevoked()
-                || refreshToken.getExpiresAt().isBefore(LocalDateTime.now())
-                || user.getDeletedAt() != null) {
+        if (user.getDeletedAt() != null) {
+            throw new InvalidRefreshTokenException();
+        }
+        if (refreshToken.isRevoked()) {
+            // Reuse of a rotated token is treated as theft: revoke the whole family.
+            refreshTokenRepository.revokeAllActiveForUser(user.getId());
+            throw new InvalidRefreshTokenException();
+        }
+        if (refreshToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new InvalidRefreshTokenException();
         }
 
@@ -65,6 +71,11 @@ public class RefreshTokenService {
     @Transactional
     public void revokeRefreshToken(String rawToken) {
         refreshTokenRepository.revokeIfActive(hashToken(rawToken), LocalDateTime.now());
+    }
+
+    @Transactional
+    public void revokeAllForUser(Long userId) {
+        refreshTokenRepository.revokeAllActiveForUser(userId);
     }
 
     private String hashToken(String rawToken) {

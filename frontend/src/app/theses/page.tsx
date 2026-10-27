@@ -1,5 +1,12 @@
-import PlaceholderPage from "@/components/app/placeholder-page";
+"use client";
+
+import { AppShell } from "@/components/app/app-shell";
+import { ThesesView } from "@/components/theses/theses-view";
 
 export default function ThesesPage() {
-  return <PlaceholderPage title="Theses" body="This is where you’ll write why you would invest, and what would change your mind." />;
+  return (
+    <AppShell>
+      <ThesesView />
+    </AppShell>
+  );
 }
