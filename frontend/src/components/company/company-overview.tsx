@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { CompanyIdentity } from "@/components/company/company-identity";
+import { CompanySkeleton } from "@/components/company/company-skeleton";
 import { PriceChart } from "@/components/company/price-chart";
 import {
   countryName,
@@ -68,7 +69,7 @@ export function CompanyOverview({ symbol }: { symbol: string }) {
   }, [symbol]);
 
   if (loading) {
-    return <div className="min-h-[50vh]" />;
+    return <CompanySkeleton />;
   }
 
   if (error || !company) {
@@ -121,7 +122,7 @@ export function CompanyOverview({ symbol }: { symbol: string }) {
   const debt = financials?.totalDebt;
 
   return (
-    <div className="flex w-full max-w-[1320px] flex-col gap-7 px-4 pb-12 pt-3 sm:px-10">
+    <div className="mx-auto flex w-full max-w-[1320px] flex-col gap-7 px-4 pb-12 pt-3 sm:px-10">
       <CompanyIdentity company={company} tab="overview" />
 
       <div className="flex flex-wrap items-stretch gap-5">

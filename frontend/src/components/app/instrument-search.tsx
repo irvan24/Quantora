@@ -13,7 +13,17 @@ import {
 const DEBOUNCE_MS = 280;
 const MIN_QUERY_LENGTH = 2;
 
-export function InstrumentSearch({ toPath = instrumentPath }: { toPath?: (symbol: string) => string }) {
+export function InstrumentSearch({
+  toPath = instrumentPath,
+  variant = "default",
+  placeholder = "Search a company, ETF or thesis",
+  autoFocus = false,
+}: {
+  toPath?: (symbol: string) => string;
+  variant?: "default" | "hero";
+  placeholder?: string;
+  autoFocus?: boolean;
+}) {
   const router = useRouter();
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -162,10 +172,22 @@ export function InstrumentSearch({ toPath = instrumentPath }: { toPath?: (symbol
   const showPanel = open && query.trim().length >= MIN_QUERY_LENGTH;
   const activeId = showPanel && results[activeIndex] ? `${listId}-${results[activeIndex].symbol}` : undefined;
 
+  const hero = variant === "hero";
+
   return (
-    <form ref={rootRef} onSubmit={onSubmit} className="relative min-w-0 max-w-[480px] flex-1">
-      <div className="flex h-[38px] items-center gap-[11px] rounded-[10px] bg-input px-3 focus-within:bg-[#14171B]">
-        <SearchIcon className="text-dim" />
+    <form
+      ref={rootRef}
+      onSubmit={onSubmit}
+      className={hero ? "relative w-full max-w-[680px]" : "relative min-w-0 max-w-[480px] flex-1"}
+    >
+      <div
+        className={
+          hero
+            ? "flex h-[58px] items-center gap-3.5 rounded-[14px] bg-input px-5 focus-within:bg-[#14171B] focus-within:ring-4 focus-within:ring-[#8E9CE0]/10"
+            : "flex h-[38px] items-center gap-[11px] rounded-[10px] bg-input px-3 focus-within:bg-[#14171B]"
+        }
+      >
+        <SearchIcon className={hero ? "text-dim shrink-0" : "text-dim"} />
         <input
           ref={inputRef}
           type="search"
@@ -178,8 +200,13 @@ export function InstrumentSearch({ toPath = instrumentPath }: { toPath?: (symbol
             }
           }}
           onKeyDown={onKeyDown}
-          placeholder="Search a company, ETF or thesis"
-          className="flex-1 bg-transparent text-[13.5px] text-[#ECECE8] outline-none placeholder:text-dim"
+          placeholder={placeholder}
+          autoFocus={autoFocus}
+          className={
+            hero
+              ? "flex-1 bg-transparent text-[17px] text-[#ECECE8] outline-none placeholder:text-dim"
+              : "flex-1 bg-transparent text-[13.5px] text-[#ECECE8] outline-none placeholder:text-dim"
+          }
           autoComplete="off"
           spellCheck={false}
           aria-autocomplete="list"
@@ -187,7 +214,9 @@ export function InstrumentSearch({ toPath = instrumentPath }: { toPath?: (symbol
           aria-controls={listId}
           aria-activedescendant={activeId}
         />
-        <span className="hidden rounded-[5px] bg-[#191C21] px-1.5 py-0.5 text-[11px] text-dim sm:inline">⌘K</span>
+        {!hero ? (
+          <span className="hidden rounded-[5px] bg-[#191C21] px-1.5 py-0.5 text-[11px] text-dim sm:inline">⌘K</span>
+        ) : null}
       </div>
 
       {showPanel ? (

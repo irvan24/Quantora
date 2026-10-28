@@ -10,6 +10,7 @@ import com.quantora.backend.auth.dto.ResetPasswordRequest;
 import com.quantora.backend.auth.dto.UserResponse;
 import com.quantora.backend.auth.security.AuthCookieService;
 import com.quantora.backend.config.PasswordResetProperties;
+import com.quantora.backend.mail.MailClient;
 import com.quantora.backend.auth.exception.EmailAlreadyExistsException;
 import com.quantora.backend.auth.exception.InvalidCredentialsException;
 import com.quantora.backend.auth.exception.InvalidRefreshTokenException;
@@ -31,6 +32,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Service
@@ -48,6 +51,7 @@ public class AuthService {
     private final PasswordResetProperties passwordResetProperties;
     private final InMemoryRateLimiter rateLimiter;
     private final int loginAttemptsPerEmail;
+    private final MailClient mailClient;
 
     public AuthService(
             UserRepository userRepository,
@@ -59,7 +63,8 @@ public class AuthService {
             AuthCookieService authCookieService,
             PasswordResetProperties passwordResetProperties,
             InMemoryRateLimiter rateLimiter,
-            ApiSecurityProperties securityProperties
+            ApiSecurityProperties securityProperties,
+            MailClient mailClient
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -71,6 +76,7 @@ public class AuthService {
         this.passwordResetProperties = passwordResetProperties;
         this.rateLimiter = rateLimiter;
         this.loginAttemptsPerEmail = securityProperties.rateLimit().loginAttemptsPerEmail();
+        this.mailClient = mailClient;
     }
 
     @Transactional
@@ -140,10 +146,16 @@ public class AuthService {
         if (token.isEmpty()) {
             return Optional.empty();
         }
+        mailClient.sendPasswordReset(request.email(), resetUrl(token.get()));
         if (passwordResetProperties.exposeTokenInResponse()) {
             return Optional.of(new ForgotPasswordResponse(token.get()));
         }
         return Optional.empty();
+    }
+
+    private String resetUrl(String token) {
+        String encoded = URLEncoder.encode(token, StandardCharsets.UTF_8);
+        return passwordResetProperties.linkBaseUrl() + "/reset-password?token=" + encoded;
     }
 
     @Transactional
@@ -163,14 +175,20 @@ public class AuthService {
         return UserResponse.from(user);
     }
 
+    /**
+     * When cookies carry the session, the tokens must stay out of the JSON body too — a
+     * response field is readable by any page script, which defeats the point of HttpOnly
+     * cookies (the whole reason to use them is to keep tokens out of JS reach for XSS).
+     */
     private AuthResponse issueAuthResponse(User user, HttpServletResponse response) {
         UserPrincipal userPrincipal = UserPrincipal.from(user);
         String accessToken = jwtService.generateToken(userPrincipal);
         String refreshToken = refreshTokenService.createRefreshToken(user);
         authCookieService.writeAuthCookies(response, accessToken, refreshToken);
+        boolean cookiesCarrySession = authCookieService.isEnabled();
         return AuthResponse.of(
-                accessToken,
-                refreshToken,
+                cookiesCarrySession ? null : accessToken,
+                cookiesCarrySession ? null : refreshToken,
                 jwtProperties.expirationMs(),
                 UserResponse.from(user)
         );

@@ -15,6 +15,7 @@ import {
   instrumentValuationPath,
   type CompanyProfile,
 } from "@/lib/instruments";
+import { addToWatchlist, listWatchlist, removeFromWatchlist } from "@/lib/watchlist";
 
 type Tab = "overview" | "financials" | "valuation" | "research" | "thesis";
 
@@ -61,13 +62,7 @@ export function CompanyIdentity({ company, tab }: { company: CompanyProfile; tab
         </div>
 
         <div className="flex items-center gap-2">
-          <Link
-            href="/watchlist"
-            className="flex h-[38px] items-center gap-2 rounded-[10px] border border-[#1E2228] px-3.5 text-[13.5px] font-medium text-[#BDC3CB] hover:bg-[#14171B] hover:text-[#ECECE8]"
-          >
-            <Star size={14} strokeWidth={1.7} aria-hidden="true" />
-            Add to Watchlist
-          </Link>
+          <WatchlistToggle symbol={company.symbol} />
           <Link
             href={instrumentResearchPath(company.symbol)}
             className="flex h-[38px] items-center gap-2 rounded-[10px] bg-[#16191D] px-3.5 text-[13.5px] font-medium text-[#BDC3CB] hover:bg-[#1C2027] hover:text-[#ECECE8]"
@@ -95,6 +90,63 @@ export function CompanyIdentity({ company, tab }: { company: CompanyProfile; tab
         </TabLink>
       </div>
     </>
+  );
+}
+
+function WatchlistToggle({ symbol }: { symbol: string }) {
+  const [watching, setWatching] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    listWatchlist()
+      .then((items) => {
+        if (active) {
+          setWatching(items.some((item) => item.symbol === symbol));
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setWatching(false);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [symbol]);
+
+  async function toggle() {
+    if (watching === null || busy) {
+      return;
+    }
+    setBusy(true);
+    try {
+      if (watching) {
+        await removeFromWatchlist(symbol);
+        setWatching(false);
+      } else {
+        await addToWatchlist(symbol);
+        setWatching(true);
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      disabled={watching === null || busy}
+      className={`flex h-[38px] items-center gap-2 rounded-[10px] border px-3.5 text-[13.5px] font-medium disabled:opacity-60 ${
+        watching
+          ? "border-transparent bg-[rgba(142,156,224,0.14)] text-[#AAB5EA] hover:bg-[rgba(142,156,224,0.2)]"
+          : "border-[#1E2228] text-[#BDC3CB] hover:bg-[#14171B] hover:text-[#ECECE8]"
+      }`}
+    >
+      <Star size={14} strokeWidth={1.7} fill={watching ? "currentColor" : "none"} aria-hidden="true" />
+      {watching ? "On Watchlist" : "Add to Watchlist"}
+    </button>
   );
 }
 

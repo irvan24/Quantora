@@ -23,8 +23,13 @@ export async function listTheses() {
   return api<Thesis[]>("/api/theses");
 }
 
+export type ThesisSummary = {
+  count: number;
+  needingReview: number;
+};
+
 export async function getThesisSummary() {
-  return api<{ count: number }>("/api/theses/summary");
+  return api<ThesisSummary>("/api/theses/summary");
 }
 
 export async function createThesis(input: ThesisInput) {

@@ -4,6 +4,7 @@ import com.quantora.backend.auth.exception.UnauthorizedException;
 import com.quantora.backend.auth.security.UserPrincipal;
 import com.quantora.backend.reflect.dto.ThesisRequest;
 import com.quantora.backend.reflect.dto.ThesisResponse;
+import com.quantora.backend.reflect.dto.ThesisSummaryResponse;
 import com.quantora.backend.reflect.service.ThesisService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/theses")
@@ -37,9 +37,9 @@ public class ThesisController {
     }
 
     @GetMapping("/summary")
-    public Map<String, Long> summary(@AuthenticationPrincipal UserPrincipal principal) {
-        long count = thesisService.count(requireUserId(principal));
-        return Map.of("count", count);
+    public ThesisSummaryResponse summary(@AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = requireUserId(principal);
+        return new ThesisSummaryResponse(thesisService.count(userId), thesisService.countNeedingReview(userId));
     }
 
     @GetMapping("/{id}")

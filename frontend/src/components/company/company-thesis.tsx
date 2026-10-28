@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, X } from "lucide-react";
 import { CompanyIdentity } from "@/components/company/company-identity";
+import { CompanySkeleton } from "@/components/company/company-skeleton";
 import {
   formatCompactMoney,
   formatPrice,
@@ -229,7 +230,7 @@ export function CompanyThesis({ symbol }: { symbol: string }) {
   }
 
   if (loading) {
-    return <div className="min-h-[50vh]" />;
+    return <CompanySkeleton />;
   }
   if (error && !company) {
     return (
@@ -251,7 +252,7 @@ export function CompanyThesis({ symbol }: { symbol: string }) {
   const shownSnapshot = snapshot ?? captureSnapshot(company, lines);
 
   return (
-    <div className="flex w-full max-w-[1240px] flex-col gap-7 px-4 pb-14 pt-3 sm:px-10">
+    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-7 px-4 pb-14 pt-3 sm:px-10">
       <CompanyIdentity company={company} tab="thesis" />
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
         <div className="min-w-0 flex-[1_1_420px]">

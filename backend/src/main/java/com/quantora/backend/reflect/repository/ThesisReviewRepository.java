@@ -8,4 +8,6 @@ import java.util.List;
 public interface ThesisReviewRepository extends JpaRepository<ThesisReview, Long> {
 
     List<ThesisReview> findAllByThesisIdOrderByCreatedAtDesc(Long thesisId);
+
+    List<ThesisReview> findAllByThesisIdInOrderByCreatedAtDesc(List<Long> thesisIds);
 }

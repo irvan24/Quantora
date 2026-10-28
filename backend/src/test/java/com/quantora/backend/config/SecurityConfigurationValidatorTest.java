@@ -19,13 +19,21 @@ class SecurityConfigurationValidatorTest {
         return new CorsProperties(List.of("https://app.quantora.test"));
     }
 
+    private static AuthCookieProperties cookiesDisabled() {
+        return new AuthCookieProperties(false, false, "Lax");
+    }
+
+    private static AuthCookieProperties secureCookies() {
+        return new AuthCookieProperties(true, true, "Lax");
+    }
+
     @Test
     void refusesTheDevelopmentSecretOutsideDevProfiles() {
         MockEnvironment prod = new MockEnvironment();
         prod.setActiveProfiles("prod");
 
         assertThatThrownBy(() -> SecurityConfigurationValidator.validate(
-                withSecret(SecurityConfigurationValidator.DEV_JWT_SECRET), httpsOrigin(), prod))
+                withSecret(SecurityConfigurationValidator.DEV_JWT_SECRET), httpsOrigin(), cookiesDisabled(), prod))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("JWT_SECRET");
     }
@@ -33,7 +41,7 @@ class SecurityConfigurationValidatorTest {
     @Test
     void refusesTheDevelopmentSecretWhenNoProfileIsActive() {
         assertThatThrownBy(() -> SecurityConfigurationValidator.validate(
-                withSecret(SecurityConfigurationValidator.DEV_JWT_SECRET), httpsOrigin(), new MockEnvironment()))
+                withSecret(SecurityConfigurationValidator.DEV_JWT_SECRET), httpsOrigin(), cookiesDisabled(), new MockEnvironment()))
                 .isInstanceOf(IllegalStateException.class);
     }
 
@@ -46,9 +54,9 @@ class SecurityConfigurationValidatorTest {
         CorsProperties local = new CorsProperties(List.of("http://localhost:*"));
 
         assertThatCode(() -> SecurityConfigurationValidator.validate(
-                withSecret(SecurityConfigurationValidator.DEV_JWT_SECRET), local, dev)).doesNotThrowAnyException();
+                withSecret(SecurityConfigurationValidator.DEV_JWT_SECRET), local, cookiesDisabled(), dev)).doesNotThrowAnyException();
         assertThatCode(() -> SecurityConfigurationValidator.validate(
-                withSecret(SecurityConfigurationValidator.DEV_JWT_SECRET), local, test)).doesNotThrowAnyException();
+                withSecret(SecurityConfigurationValidator.DEV_JWT_SECRET), local, cookiesDisabled(), test)).doesNotThrowAnyException();
     }
 
     @Test
@@ -57,7 +65,7 @@ class SecurityConfigurationValidatorTest {
         prod.setActiveProfiles("prod");
 
         assertThatCode(() -> SecurityConfigurationValidator.validate(
-                withSecret("a-random-production-secret-of-sufficient-length-123"), httpsOrigin(), prod))
+                withSecret("a-random-production-secret-of-sufficient-length-123"), httpsOrigin(), cookiesDisabled(), prod))
                 .doesNotThrowAnyException();
     }
 
@@ -68,14 +76,48 @@ class SecurityConfigurationValidatorTest {
         JwtProperties secret = withSecret("a-random-production-secret-of-sufficient-length-123");
 
         assertThatThrownBy(() -> SecurityConfigurationValidator.validate(
-                secret, new CorsProperties(List.of("*")), prod))
+                secret, new CorsProperties(List.of("*")), cookiesDisabled(), prod))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("CORS");
 
         assertThatThrownBy(() -> SecurityConfigurationValidator.validate(
-                secret, new CorsProperties(List.of("http://localhost:*")), prod))
+                secret, new CorsProperties(List.of("http://localhost:*")), cookiesDisabled(), prod))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("CORS");
+    }
+
+    @Test
+    void refusesEnabledCookiesWithoutSecureOutsideDev() {
+        MockEnvironment prod = new MockEnvironment();
+        prod.setActiveProfiles("prod");
+        JwtProperties secret = withSecret("a-random-production-secret-of-sufficient-length-123");
+
+        assertThatThrownBy(() -> SecurityConfigurationValidator.validate(
+                secret, httpsOrigin(), new AuthCookieProperties(true, false, "Lax"), prod))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("AUTH_COOKIES_SECURE");
+    }
+
+    @Test
+    void allowsEnabledCookiesWithSecureOutsideDev() {
+        MockEnvironment prod = new MockEnvironment();
+        prod.setActiveProfiles("prod");
+        JwtProperties secret = withSecret("a-random-production-secret-of-sufficient-length-123");
+
+        assertThatCode(() -> SecurityConfigurationValidator.validate(
+                secret, httpsOrigin(), secureCookies(), prod))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void allowsDisabledOrInsecureCookiesInDevAndTestProfiles() {
+        MockEnvironment dev = new MockEnvironment();
+        dev.setActiveProfiles("dev");
+        JwtProperties secret = withSecret("a-random-production-secret-of-sufficient-length-123");
+
+        assertThatCode(() -> SecurityConfigurationValidator.validate(
+                secret, httpsOrigin(), new AuthCookieProperties(true, false, "Lax"), dev))
+                .doesNotThrowAnyException();
     }
 
     @Test

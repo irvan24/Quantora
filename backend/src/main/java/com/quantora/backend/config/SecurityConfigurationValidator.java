@@ -17,12 +17,18 @@ public class SecurityConfigurationValidator {
     public SecurityConfigurationValidator(
             JwtProperties jwtProperties,
             CorsProperties corsProperties,
+            AuthCookieProperties cookieProperties,
             Environment environment
     ) {
-        validate(jwtProperties, corsProperties, environment);
+        validate(jwtProperties, corsProperties, cookieProperties, environment);
     }
 
-    static void validate(JwtProperties jwtProperties, CorsProperties corsProperties, Environment environment) {
+    static void validate(
+            JwtProperties jwtProperties,
+            CorsProperties corsProperties,
+            AuthCookieProperties cookieProperties,
+            Environment environment
+    ) {
         if (environment.acceptsProfiles(RELAXED_PROFILES)) {
             return;
         }
@@ -39,6 +45,12 @@ public class SecurityConfigurationValidator {
                                 + "Set CORS_ALLOWED_ORIGINS to exact https origins."
                 );
             }
+        }
+        if (cookieProperties.enabled() && !cookieProperties.secure()) {
+            throw new IllegalStateException(
+                    "Auth cookies cannot be issued without the Secure attribute outside the dev profile. "
+                            + "Set AUTH_COOKIES_SECURE to true (requires HTTPS)."
+            );
         }
     }
 

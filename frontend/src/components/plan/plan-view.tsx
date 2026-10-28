@@ -34,7 +34,7 @@ export function PlanView() {
     return <p className="px-6 py-16 text-[13px] text-[#D7A3A3] sm:px-11">{error}</p>;
   }
   if (!view) {
-    return <div className="min-h-[40vh]" />;
+    return <PlanSkeleton />;
   }
 
   return (
@@ -242,6 +242,29 @@ export function PlanView() {
       </div>
 
       <div className="text-[12.5px] text-[#6F7680]">Quantora helps you think. It never tells you what to buy.</div>
+    </div>
+  );
+}
+
+function PlanSkeleton() {
+  return (
+    <div className="mx-auto flex w-full max-w-[1180px] animate-pulse flex-col gap-[52px] px-4 py-10 sm:px-11 sm:py-[46px]" aria-busy="true" aria-live="polite">
+      <div className="flex flex-wrap items-start gap-8">
+        <div className="flex min-w-0 flex-[1_1_420px] flex-col gap-3">
+          <div className="h-9 w-40 rounded bg-card" />
+          <div className="h-5 w-56 rounded bg-card" />
+        </div>
+        <div className="h-10 w-28 rounded-[10px] bg-card" />
+      </div>
+      <div className="h-[280px] rounded-[20px] bg-card" />
+      <div className="flex flex-col gap-6">
+        <div className="h-4 w-48 rounded bg-card" />
+        <div className="flex flex-wrap gap-x-14 gap-y-9">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="h-16 w-48 rounded bg-card" />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

@@ -4,22 +4,36 @@ import com.quantora.backend.auth.exception.UnauthorizedException;
 import com.quantora.backend.reflect.dto.ThesisRequest;
 import com.quantora.backend.reflect.dto.ThesisResponse;
 import com.quantora.backend.reflect.entity.InvestmentThesis;
+import com.quantora.backend.reflect.entity.ThesisReview;
+import com.quantora.backend.reflect.enums.ReviewVerdict;
 import com.quantora.backend.reflect.repository.InvestmentThesisRepository;
+import com.quantora.backend.reflect.repository.ThesisReviewRepository;
 import com.quantora.backend.user.entity.User;
 import com.quantora.backend.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ThesisService {
 
+    private static final int STALE_REVIEW_DAYS = 90;
+
     private final InvestmentThesisRepository thesisRepository;
+    private final ThesisReviewRepository thesisReviewRepository;
     private final UserRepository userRepository;
 
-    public ThesisService(InvestmentThesisRepository thesisRepository, UserRepository userRepository) {
+    public ThesisService(
+            InvestmentThesisRepository thesisRepository,
+            ThesisReviewRepository thesisReviewRepository,
+            UserRepository userRepository
+    ) {
         this.thesisRepository = thesisRepository;
+        this.thesisReviewRepository = thesisReviewRepository;
         this.userRepository = userRepository;
     }
 
@@ -79,6 +93,39 @@ public class ThesisService {
     public long count(Long userId) {
         requireActiveUser(userId);
         return thesisRepository.countByUserId(userId);
+    }
+
+    /**
+     * A thesis needs review when it has never been reviewed, the last review did not
+     * confirm it is still valid, or that confirmation is older than {@link #STALE_REVIEW_DAYS} days.
+     */
+    @Transactional(readOnly = true)
+    public long countNeedingReview(Long userId) {
+        requireActiveUser(userId);
+        List<InvestmentThesis> theses = thesisRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
+        if (theses.isEmpty()) {
+            return 0;
+        }
+        List<Long> thesisIds = theses.stream().map(InvestmentThesis::getId).toList();
+        Map<Long, ThesisReview> latestReviewByThesisId = thesisReviewRepository
+                .findAllByThesisIdInOrderByCreatedAtDesc(thesisIds).stream()
+                .collect(Collectors.toMap(
+                        review -> review.getThesis().getId(),
+                        review -> review,
+                        (first, second) -> first
+                ));
+        LocalDateTime staleBefore = LocalDateTime.now().minusDays(STALE_REVIEW_DAYS);
+        return theses.stream().filter(thesis -> needsReview(latestReviewByThesisId.get(thesis.getId()), staleBefore)).count();
+    }
+
+    private boolean needsReview(ThesisReview latestReview, LocalDateTime staleBefore) {
+        if (latestReview == null) {
+            return true;
+        }
+        if (latestReview.getVerdict() != ReviewVerdict.STILL_VALID) {
+            return true;
+        }
+        return latestReview.getCreatedAt().isBefore(staleBefore);
     }
 
     private User requireActiveUser(Long userId) {

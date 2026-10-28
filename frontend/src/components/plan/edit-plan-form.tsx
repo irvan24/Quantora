@@ -137,7 +137,7 @@ export function EditPlanForm() {
     return <p className="px-6 py-16 text-[13px] text-[#D7A3A3] sm:px-11">{error}</p>;
   }
   if (!answers) {
-    return <div className="min-h-[40vh]" />;
+    return <EditPlanSkeleton />;
   }
 
   return (
@@ -531,6 +531,24 @@ export function EditPlanForm() {
             Big changes are worth sleeping on. You can come back to this page any time.
           </div>
         </aside>
+      </div>
+    </div>
+  );
+}
+
+function EditPlanSkeleton() {
+  return (
+    <div className="flex min-h-screen flex-col">
+      <div className="flex items-center gap-[18px] border-b border-[#15181C] px-4 py-4 sm:px-11">
+        <div className="h-4 w-20 animate-pulse rounded bg-card" />
+      </div>
+      <div className="mx-auto flex w-full max-w-[1240px] animate-pulse flex-col gap-11 px-4 py-10 sm:px-11" aria-busy="true" aria-live="polite">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-4">
+            <div className="h-4 w-48 rounded bg-card" />
+            <div className="h-24 rounded-xl bg-card" />
+          </div>
+        ))}
       </div>
     </div>
   );

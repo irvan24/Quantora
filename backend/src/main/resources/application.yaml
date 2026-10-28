@@ -61,6 +61,7 @@ quantora:
     password-reset:
       expiration-ms: ${PASSWORD_RESET_EXPIRATION_MS:3600000}
       expose-token-in-response: ${PASSWORD_RESET_EXPOSE_TOKEN:false}
+      link-base-url: ${PASSWORD_RESET_LINK_BASE_URL:}
   security:
     max-request-body-bytes: ${MAX_REQUEST_BODY_BYTES:65536}
     rate-limit:
@@ -75,3 +76,10 @@ quantora:
     fmp:
       base-url: ${FMP_BASE_URL:https://financialmodelingprep.com/stable}
       api-key: ${FMP_API_KEY:}
+  mail:
+    # resend today; stub in tests. Swap MAIL_PROVIDER without changing callers.
+    provider: ${MAIL_PROVIDER:resend}
+    resend:
+      base-url: ${RESEND_BASE_URL:https://api.resend.com}
+      api-key: ${RESEND_API_KEY:}
+      from-email: ${RESEND_FROM_EMAIL:onboarding@resend.dev}

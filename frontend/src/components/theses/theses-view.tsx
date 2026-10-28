@@ -98,7 +98,7 @@ export function ThesesView() {
   }
 
   return (
-    <div className="flex w-full max-w-[1040px] flex-col gap-7 px-4 pt-5 pb-16 sm:px-10">
+    <div className="mx-auto flex w-full max-w-[1040px] flex-col gap-7 px-4 pt-5 pb-16 sm:px-10">
       <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
         <div className="min-w-0 flex-[1_1_320px]">
           <h1 className="text-[30px] font-normal tracking-[-0.02em] text-[#ECECE8]">Thesis</h1>
@@ -117,7 +117,7 @@ export function ThesesView() {
       {error ? <p className="text-[13px] text-[#D7A3A3]">{error}</p> : null}
 
       {loading ? (
-        <div className="min-h-[40vh]" />
+        <ThesesSkeleton />
       ) : cards.length === 0 ? (
         <section className="flex flex-col items-center rounded-[18px] bg-card px-8 py-16 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-[13px] bg-[#171A1F] text-[#8E9CE0]">
@@ -209,6 +209,26 @@ function CountButton({ label, count, onClick }: { label: string; count: number; 
       <span className="text-[22px] font-light tracking-[-0.01em] text-[#ECECE8]">{count}</span>
       <span className="text-[13px] text-[#8A9199]">{label}</span>
     </button>
+  );
+}
+
+function ThesesSkeleton() {
+  return (
+    <div className="flex animate-pulse flex-col gap-7" aria-busy="true" aria-live="polite">
+      <div className="flex flex-wrap items-baseline gap-x-8 gap-y-2.5 border-y border-[#16191D] py-3.5">
+        <div className="h-6 w-20 rounded bg-card" />
+        <div className="h-6 w-20 rounded bg-card" />
+      </div>
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+        <div className="h-9 w-[180px] rounded-[10px] bg-card" />
+        <div className="ml-auto h-9 min-w-[200px] flex-[0_1_260px] rounded-[9px] bg-card" />
+      </div>
+      <div className="flex flex-col gap-2.5">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-[108px] rounded-[14px] bg-card" />
+        ))}
+      </div>
+    </div>
   );
 }
 

@@ -20,7 +20,10 @@ export function HomeDashboard({ user }: { user: AuthUser }) {
     let cancelled = false;
     (async () => {
       try {
-        const [profile, summary] = await Promise.all([getOnboarding(), getThesisSummary().catch(() => ({ count: 0 }))]);
+        const [profile, summary] = await Promise.all([
+          getOnboarding(),
+          getThesisSummary().catch(() => ({ count: 0, needingReview: 0 })),
+        ]);
         if (!cancelled) {
           setModel(homeModel(profile));
           setThesisCount(summary.count);
@@ -56,7 +59,7 @@ export function HomeDashboard({ user }: { user: AuthUser }) {
   const firstLessonDone = firstLessonTopic ? isLessonCompleted(firstLessonTopic) : false;
 
   return (
-    <div className="flex w-full max-w-[1420px] flex-col gap-5 px-4 py-8 sm:px-10 sm:py-[38px]">
+    <div className="mx-auto flex w-full max-w-[1420px] flex-col gap-5 px-4 py-8 sm:px-10 sm:py-[38px]">
       <div className="flex flex-col gap-[22px]">
         <div>
           <div className="text-xs font-medium tracking-[0.09em] text-dim uppercase">{today}</div>
@@ -73,10 +76,11 @@ export function HomeDashboard({ user }: { user: AuthUser }) {
         <div className="flex flex-wrap gap-4">
           <StatCard
             label="Plan"
-            value={loading ? "…" : model?.plan?.value}
+            value={model?.plan?.value}
             meta={model?.plan?.meta || "Complete onboarding to write your starting plan."}
-            empty={!loading && !model?.plan}
-            dot={!loading && Boolean(model?.plan)}
+            empty={!model?.plan}
+            dot={Boolean(model?.plan)}
+            loading={loading}
           />
           <StatCard
             label="Discipline"
@@ -84,12 +88,14 @@ export function HomeDashboard({ user }: { user: AuthUser }) {
             meta={thesisCount > 0 ? "Keep your reasoning up to date" : "Begins with your first thesis"}
             empty={thesisCount === 0}
             dot={thesisCount > 0}
+            loading={loading}
           />
           <StatCard
             label="Contribution"
-            value={loading ? "…" : model?.contribution?.value}
+            value={model?.contribution?.value}
             meta={model?.contribution?.meta || "Set a target when you know how you want to invest."}
-            empty={!loading && !model?.contribution}
+            empty={!model?.contribution}
+            loading={loading}
           />
         </div>
       </div>
@@ -100,7 +106,17 @@ export function HomeDashboard({ user }: { user: AuthUser }) {
             <span className="h-1.5 w-1.5 rounded-full bg-cta" />
             <span className="text-[10.5px] font-semibold tracking-[0.16em] text-link uppercase">Start here</span>
           </div>
-          {loading ? null : firstLesson ? (
+          {loading ? (
+            <div className="mt-[18px] flex animate-pulse flex-col gap-2.5" aria-busy="true">
+              <div className="h-7 w-72 max-w-full rounded bg-[#1A1D22]" />
+              <div className="h-4 w-full max-w-[58ch] rounded bg-[#1A1D22]" />
+              <div className="mt-3.5 flex flex-col gap-px overflow-hidden rounded-xl bg-[#1A1D22]">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-[52px] bg-[#141619]" />
+                ))}
+              </div>
+            </div>
+          ) : firstLesson ? (
             <>
               <h2 className="mt-[18px] text-[27px] font-medium tracking-[-0.015em] text-[#ECECE8]">
                 {firstLesson.title}
@@ -275,13 +291,27 @@ function StatCard({
   meta,
   empty,
   dot,
+  loading,
 }: {
   label: string;
   value?: string;
   meta: string;
   empty?: boolean;
   dot?: boolean;
+  loading?: boolean;
 }) {
+  if (loading) {
+    return (
+      <div
+        className="flex min-w-0 flex-[1_1_240px] animate-pulse flex-col gap-3 rounded-[14px] border border-[#171A1E] bg-card-alt px-5 py-[18px]"
+        aria-busy="true"
+      >
+        <div className="h-3 w-16 rounded bg-card" />
+        <div className="h-5 w-24 rounded bg-card" />
+        <div className="h-3 w-32 rounded bg-card" />
+      </div>
+    );
+  }
   return (
     <div className="min-w-0 flex-[1_1_240px] rounded-[14px] border border-[#171A1E] bg-card-alt px-5 py-[18px]">
       <div className="text-[10.5px] font-semibold tracking-[0.16em] text-dim uppercase">{label}</div>

@@ -37,3 +37,14 @@ quantora:
     fmp:
       base-url: http://localhost
       api-key: test
+  mail:
+    provider: stub
+    resend:
+      base-url: http://localhost
+      api-key: test
+      from-email: test@quantora.test
+  auth:
+    password-reset:
+      expiration-ms: 3600000
+      expose-token-in-response: true
+      link-base-url: http://localhost:3001

@@ -106,7 +106,11 @@ export function JournalView() {
 
       <section>
         {loading ? (
-          <p className="text-sm text-muted">Loading…</p>
+          <div className="flex animate-pulse flex-col gap-3" aria-busy="true" aria-live="polite">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-[76px] rounded-xl border border-[#1E2228] bg-card" />
+            ))}
+          </div>
         ) : entries.length === 0 ? (
           <p className="text-sm text-muted">No entries yet.</p>
         ) : (

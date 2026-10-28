@@ -4,6 +4,7 @@ import com.quantora.backend.config.ApiSecurityProperties;
 import com.quantora.backend.config.AuthCookieProperties;
 import com.quantora.backend.config.CorsProperties;
 import com.quantora.backend.config.JwtProperties;
+import com.quantora.backend.config.MailProperties;
 import com.quantora.backend.config.MarketDataProperties;
 import com.quantora.backend.config.PasswordResetProperties;
 import org.springframework.boot.SpringApplication;
@@ -19,7 +20,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         ApiSecurityProperties.class,
         AuthCookieProperties.class,
         PasswordResetProperties.class,
-        MarketDataProperties.class
+        MarketDataProperties.class,
+        MailProperties.class
 })
 public class QuaantoraApplication {
 

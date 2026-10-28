@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "quantora.auth.password-reset")
 public record PasswordResetProperties(
         long expirationMs,
-        boolean exposeTokenInResponse
+        boolean exposeTokenInResponse,
+        String linkBaseUrl
 ) {
 }
