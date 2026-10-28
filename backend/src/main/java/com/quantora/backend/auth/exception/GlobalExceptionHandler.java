@@ -5,6 +5,7 @@ import com.quantora.backend.instrument.exception.InvalidInstrumentSymbolExceptio
 import com.quantora.backend.instrument.exception.InvalidStatementPeriodException;
 import com.quantora.backend.marketdata.MarketDataUnavailableException;
 import com.quantora.backend.security.request.RequestBodyTooLargeException;
+import com.quantora.backend.user.exception.InvalidCurrentPasswordException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<Map<String, String>> handleInvalidCredentials(InvalidCredentialsException ex) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidCurrentPasswordException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidCurrentPassword(InvalidCurrentPasswordException ex) {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("message", ex.getMessage()));

@@ -31,7 +31,7 @@ public record RegisterRequest(
     Boolean termsAccepted
 ) {
     /** BCrypt only hashes the first 72 bytes; longer inputs would be silently truncated or rejected. */
-    static final int MAX_PASSWORD_BYTES = 72;
+    public static final int MAX_PASSWORD_BYTES = 72;
 
     public RegisterRequest {
         firstName = trimToNull(firstName);
