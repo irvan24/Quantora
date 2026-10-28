@@ -1,5 +1,6 @@
 "use client";
 
+import { Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/app/app-header";
@@ -7,7 +8,13 @@ import { AppSidebar } from "@/components/app/app-sidebar";
 import { AskQuantora } from "@/components/app/ask-quantora";
 import { useAuth } from "@/components/auth/auth-provider";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  hideHeader = false,
+}: {
+  children: React.ReactNode;
+  hideHeader?: boolean;
+}) {
   const router = useRouter();
   const { user, ready } = useAuth();
   const [askOpen, setAskOpen] = useState(false);
@@ -57,7 +64,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       )}
 
       <main className="flex min-w-0 flex-1 flex-col">
-        <AppHeader user={user} onMenu={() => setMenuOpen(true)} />
+        {hideHeader ? (
+          <div className="flex items-center border-b border-line px-4 py-3 lg:hidden">
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-dim hover:text-[#ECECE8]"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu size={18} strokeWidth={1.8} aria-hidden="true" />
+            </button>
+          </div>
+        ) : (
+          <AppHeader user={user} onMenu={() => setMenuOpen(true)} />
+        )}
         {children}
       </main>
 

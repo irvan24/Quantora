@@ -1,7 +1,8 @@
 # --- Environment & secrets ---
 .env
 .env.*
-!.env.example
+# Machine-local Spring Boot overrides (picked up from the working directory)
+backend/config/
 
 # --- OS ---
 .DS_Store
@@ -48,3 +49,17 @@ build/
 .nuxt/
 coverage/
 *.tsbuildinfo
+
+# --- Local agent config and notes ---
+# Project READMEs and the Next.js agent files already in git stay tracked.
+.claude/
+*.md
+!README.md
+!frontend/README.md
+!frontend/AGENTS.md
+!frontend/CLAUDE.md
+
+# --- Deploy notes and local ops output ---
+deploy/
+docker-compose.prod.yml
+backups/

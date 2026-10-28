@@ -2,13 +2,17 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ArrowRight } from "lucide-react";
 import { ArrowIcon } from "@/components/icons";
 import { type AuthUser, displayName } from "@/lib/auth";
 import { homeModel, type HomeModel } from "@/lib/home";
-import { getOnboarding } from "@/lib/onboarding";
+import { asLessonTopic, isLessonCompleted, lessonPath } from "@/lib/learn";
+import { getOnboarding, type InvestmentKnowledge } from "@/lib/onboarding";
+import { getThesisSummary } from "@/lib/theses";
 
 export function HomeDashboard({ user }: { user: AuthUser }) {
   const [model, setModel] = useState<HomeModel | null>(null);
+  const [thesisCount, setThesisCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -16,9 +20,13 @@ export function HomeDashboard({ user }: { user: AuthUser }) {
     let cancelled = false;
     (async () => {
       try {
-        const profile = await getOnboarding();
+        const [profile, summary] = await Promise.all([
+          getOnboarding(),
+          getThesisSummary().catch(() => ({ count: 0, needingReview: 0 })),
+        ]);
         if (!cancelled) {
           setModel(homeModel(profile));
+          setThesisCount(summary.count);
         }
       } catch (err) {
         if (!cancelled) {
@@ -42,9 +50,16 @@ export function HomeDashboard({ user }: { user: AuthUser }) {
   }).format(new Date());
 
   const firstLesson = model?.lessons[0] ?? null;
+  const completedCount =
+    model?.lessons.filter((l) => {
+      const topic = asLessonTopic(l.topic);
+      return topic ? isLessonCompleted(topic) : false;
+    }).length ?? 0;
+  const firstLessonTopic = firstLesson ? asLessonTopic(firstLesson.topic) : null;
+  const firstLessonDone = firstLessonTopic ? isLessonCompleted(firstLessonTopic) : false;
 
   return (
-    <div className="flex w-full max-w-[1420px] flex-col gap-5 px-4 py-8 sm:px-10 sm:py-[38px]">
+    <div className="mx-auto flex w-full max-w-[1420px] flex-col gap-5 px-4 py-8 sm:px-10 sm:py-[38px]">
       <div className="flex flex-col gap-[22px]">
         <div>
           <div className="text-xs font-medium tracking-[0.09em] text-dim uppercase">{today}</div>
@@ -61,22 +76,26 @@ export function HomeDashboard({ user }: { user: AuthUser }) {
         <div className="flex flex-wrap gap-4">
           <StatCard
             label="Plan"
-            value={loading ? "…" : model?.plan?.value}
+            value={model?.plan?.value}
             meta={model?.plan?.meta || "Complete onboarding to write your starting plan."}
-            empty={!loading && !model?.plan}
-            dot={!loading && Boolean(model?.plan)}
+            empty={!model?.plan}
+            dot={Boolean(model?.plan)}
+            loading={loading}
           />
           <StatCard
             label="Discipline"
-            value="Not started"
-            meta="Begins with your first decision"
-            empty
+            value={thesisCount > 0 ? `${thesisCount} thesis${thesisCount === 1 ? "" : "es"}` : "Not started"}
+            meta={thesisCount > 0 ? "Keep your reasoning up to date" : "Begins with your first thesis"}
+            empty={thesisCount === 0}
+            dot={thesisCount > 0}
+            loading={loading}
           />
           <StatCard
             label="Contribution"
-            value={loading ? "…" : model?.contribution?.value}
+            value={model?.contribution?.value}
             meta={model?.contribution?.meta || "Set a target when you know how you want to invest."}
-            empty={!loading && !model?.contribution}
+            empty={!model?.contribution}
+            loading={loading}
           />
         </div>
       </div>
@@ -87,7 +106,17 @@ export function HomeDashboard({ user }: { user: AuthUser }) {
             <span className="h-1.5 w-1.5 rounded-full bg-cta" />
             <span className="text-[10.5px] font-semibold tracking-[0.16em] text-link uppercase">Start here</span>
           </div>
-          {loading ? null : firstLesson ? (
+          {loading ? (
+            <div className="mt-[18px] flex animate-pulse flex-col gap-2.5" aria-busy="true">
+              <div className="h-7 w-72 max-w-full rounded bg-[#1A1D22]" />
+              <div className="h-4 w-full max-w-[58ch] rounded bg-[#1A1D22]" />
+              <div className="mt-3.5 flex flex-col gap-px overflow-hidden rounded-xl bg-[#1A1D22]">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-[52px] bg-[#141619]" />
+                ))}
+              </div>
+            </div>
+          ) : firstLesson ? (
             <>
               <h2 className="mt-[18px] text-[27px] font-medium tracking-[-0.015em] text-[#ECECE8]">
                 {firstLesson.title}
@@ -97,9 +126,14 @@ export function HomeDashboard({ user }: { user: AuthUser }) {
                 {model?.lessons.map((lesson, index) => (
                   <LessonRow
                     key={lesson.topic}
+                    topic={lesson.topic}
                     index={String(index + 1).padStart(2, "0")}
                     title={lesson.title}
                     current={index === 0}
+                    done={(() => {
+                      const topic = asLessonTopic(lesson.topic);
+                      return topic ? isLessonCompleted(topic) : false;
+                    })()}
                   />
                 ))}
               </div>
@@ -113,10 +147,10 @@ export function HomeDashboard({ user }: { user: AuthUser }) {
 
           <div className="mt-[26px] flex flex-wrap items-center gap-3.5">
             <Link
-              href="/learn"
+              href={firstLessonTopic ? lessonPath(firstLessonTopic) : "/learn"}
               className="flex h-[42px] items-center gap-[9px] rounded-[10px] bg-cta px-5 text-sm font-semibold text-white hover:bg-cta-hover"
             >
-              Start the first lesson
+              {firstLessonDone ? "Continue learning" : "Start the first lesson"}
               <ArrowIcon />
             </Link>
             <Link href="/research" className="flex h-[42px] items-center gap-2 px-1.5 text-[13.5px] font-medium text-dim hover:text-link">
@@ -205,7 +239,11 @@ export function HomeDashboard({ user }: { user: AuthUser }) {
             <>
               <div className="mt-[18px] flex flex-wrap items-center gap-3.5">
                 <span className="min-w-0 flex-[1_1_200px] text-sm font-medium text-[#DDDDD8]">From your plan</span>
-                <span className="text-[12.5px] text-dim">Not started</span>
+                <span className="text-[12.5px] text-dim">
+                  {completedCount > 0
+                    ? `${completedCount} of ${model?.lessons.length ?? 0} complete`
+                    : "Not started"}
+                </span>
               </div>
               <div className="mt-3 h-[3px] rounded-sm bg-[#1E2228]" />
               <div className="mt-6 border-t border-[#191C20] pt-5">
@@ -253,13 +291,27 @@ function StatCard({
   meta,
   empty,
   dot,
+  loading,
 }: {
   label: string;
   value?: string;
   meta: string;
   empty?: boolean;
   dot?: boolean;
+  loading?: boolean;
 }) {
+  if (loading) {
+    return (
+      <div
+        className="flex min-w-0 flex-[1_1_240px] animate-pulse flex-col gap-3 rounded-[14px] border border-[#171A1E] bg-card-alt px-5 py-[18px]"
+        aria-busy="true"
+      >
+        <div className="h-3 w-16 rounded bg-card" />
+        <div className="h-5 w-24 rounded bg-card" />
+        <div className="h-3 w-32 rounded bg-card" />
+      </div>
+    );
+  }
   return (
     <div className="min-w-0 flex-[1_1_240px] rounded-[14px] border border-[#171A1E] bg-card-alt px-5 py-[18px]">
       <div className="text-[10.5px] font-semibold tracking-[0.16em] text-dim uppercase">{label}</div>
@@ -274,14 +326,34 @@ function StatCard({
   );
 }
 
-function LessonRow({ index, title, current }: { index: string; title: string; current?: boolean }) {
+function LessonRow({
+  index,
+  title,
+  topic,
+  current,
+  done,
+}: {
+  index: string;
+  title: string;
+  topic: InvestmentKnowledge;
+  current?: boolean;
+  done?: boolean;
+}) {
+  const lessonTopic = asLessonTopic(topic);
+  if (!lessonTopic) {
+    return null;
+  }
   return (
-    <div className="flex flex-wrap items-center gap-3.5 bg-[#141619] px-[17px] py-[15px]">
+    <Link
+      href={lessonPath(lessonTopic)}
+      className="flex flex-wrap items-center gap-3.5 bg-[#141619] px-[17px] py-[15px] hover:bg-[#181B20]"
+    >
       <span className={`w-[18px] shrink-0 text-[11px] font-semibold tracking-[0.1em] ${current ? "text-link" : "text-dim"}`}>
         {index}
       </span>
       <span className={`min-w-0 flex-[1_1_220px] text-sm ${current ? "text-[#DDDDD8]" : "text-muted"}`}>{title}</span>
-    </div>
+      {done ? <span className="text-[11px] font-medium text-[#8BC4A8]">Done</span> : null}
+    </Link>
   );
 }
 
@@ -298,9 +370,7 @@ function TextLink({ href, children }: { href: string; children: React.ReactNode 
   return (
     <Link href={href} className="flex items-center gap-2 text-[13px] font-medium text-link hover:text-link-hover">
       {children}
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M4.5 12h14M13 6.5l5.5 5.5L13 17.5" />
-      </svg>
+      <ArrowRight size={13} strokeWidth={1.9} aria-hidden="true" />
     </Link>
   );
 }

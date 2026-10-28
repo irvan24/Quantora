@@ -2,6 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  Bookmark,
+  BookOpen,
+  FileText,
+  House,
+  Map,
+  PieChart,
+  Search,
+  Settings,
+  Star,
+  type LucideIcon,
+} from "lucide-react";
 import { SparkleIcon } from "@/components/icons";
 
 type AppSidebarProps = {
@@ -31,25 +43,25 @@ export function AppSidebar({ onAsk, onClose }: AppSidebarProps) {
       <nav className="flex flex-col gap-[22px]">
         <div className="flex flex-col gap-0.5">
           <Link href="/home" onClick={onClose} className={navClass(pathname === "/home")}>
-            <HomeIcon active={pathname === "/home"} />
+            <NavIcon icon={House} active={pathname === "/home"} />
             Home
           </Link>
         </div>
 
         <NavGroup label="Your journey">
-          <NavItem href="/plan" label="My Plan" icon={<PlanIcon />} onClick={onClose} />
-          <NavItem href="/learn" label="Learn" icon={<LearnIcon />} onClick={onClose} />
+          <NavItem href="/plan" label="My Plan" icon={Map} onClick={onClose} />
+          <NavItem href="/learn" label="Learn" icon={BookOpen} onClick={onClose} />
         </NavGroup>
 
         <NavGroup label="Invest">
-          <NavItem href="/research" label="Research" icon={<ResearchIcon />} onClick={onClose} />
-          <NavItem href="/watchlist" label="Watchlist" icon={<WatchlistIcon />} onClick={onClose} />
-          <NavItem href="/portfolio" label="Portfolio" icon={<PortfolioIcon />} onClick={onClose} />
+          <NavItem href="/research" label="Research" icon={Search} onClick={onClose} />
+          <NavItem href="/watchlist" label="Watchlist" icon={Star} onClick={onClose} />
+          <NavItem href="/portfolio" label="Portfolio" icon={PieChart} onClick={onClose} />
         </NavGroup>
 
         <NavGroup label="Reflect">
-          <NavItem href="/theses" label="Theses" icon={<ThesesIcon />} onClick={onClose} />
-          <NavItem href="/journal" label="Journal" icon={<JournalIcon />} onClick={onClose} />
+          <NavItem href="/theses" label="Theses" icon={FileText} onClick={onClose} />
+          <NavItem href="/journal" label="Journal" icon={Bookmark} onClick={onClose} />
         </NavGroup>
       </nav>
 
@@ -63,7 +75,7 @@ export function AppSidebar({ onAsk, onClose }: AppSidebarProps) {
           Ask Quantora
         </button>
         <Link href="/settings" onClick={onClose} className="flex items-center gap-3 px-[11px] text-[13.5px] text-dim hover:text-[#ECECE8]">
-          <SettingsIcon />
+          <Settings size={15} strokeWidth={1.7} aria-hidden="true" />
           Settings
         </Link>
         <div className="px-[11px] text-xs leading-[1.55] text-dim">
@@ -95,92 +107,19 @@ function NavItem({
 }: {
   href: string;
   label: string;
-  icon: React.ReactNode;
+  icon: LucideIcon;
   onClick?: () => void;
 }) {
+  const pathname = usePathname();
+  const active = href === "/plan" ? pathname.startsWith("/plan") : pathname === href;
   return (
-    <Link href={href} onClick={onClick} className={navClass(false)}>
-      {icon}
+    <Link href={href} onClick={onClick} className={navClass(active)}>
+      <NavIcon icon={icon} active={active} />
       {label}
     </Link>
   );
 }
 
-function HomeIcon({ active }: { active: boolean }) {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={active ? "#8E9CE0" : "currentColor"} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M3 10.5 12 3l9 7.5" />
-      <path d="M5 9.8V21h14V9.8" />
-    </svg>
-  );
-}
-
-function PlanIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 18.5V6.2a2 2 0 0 1 1.5-1.9l5-1.1 8 2v12.4l-8-2-5 1.1" />
-      <path d="M10.5 3.2v14.4" />
-    </svg>
-  );
-}
-
-function LearnIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M3.5 6.5A2 2 0 0 1 5.5 4.5H11v15H5.5a2 2 0 0 0-2 2z" />
-      <path d="M20.5 6.5a2 2 0 0 0-2-2H13v15h5.5a2 2 0 0 1 2 2z" />
-    </svg>
-  );
-}
-
-function ResearchIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" />
-      <path d="m16.5 16.5 4 4" />
-    </svg>
-  );
-}
-
-function WatchlistIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 3.8l2.5 5.3 5.7.8-4.1 4 1 5.6L12 16.9 6.9 19.5l1-5.6-4.1-4 5.7-.8z" />
-    </svg>
-  );
-}
-
-function PortfolioIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 12V3M12 12l7.5 4.5" />
-    </svg>
-  );
-}
-
-function ThesesIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
-      <rect x="4.5" y="3.5" width="15" height="17" rx="2.5" />
-      <path d="M8.5 9h7M8.5 13h7M8.5 17h4" />
-    </svg>
-  );
-}
-
-function JournalIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M6.5 3.5h11v17l-5.5-3-5.5 3z" />
-    </svg>
-  );
-}
-
-function SettingsIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="3.2" />
-      <path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7" />
-    </svg>
-  );
+function NavIcon({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) {
+  return <Icon size={16} strokeWidth={1.7} color={active ? "#8E9CE0" : "currentColor"} aria-hidden="true" />;
 }

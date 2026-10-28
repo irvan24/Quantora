@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRight, X } from "lucide-react";
 import { SparkleIcon } from "@/components/icons";
 
 const prompts = [
@@ -24,7 +25,7 @@ export function AskQuantora({ open, onClose }: { open: boolean; onClose: () => v
           className="ml-auto text-base leading-none text-dim hover:text-[#ECECE8]"
           aria-label="Close"
         >
-          ×
+          <X size={14} strokeWidth={1.8} aria-hidden="true" />
         </button>
       </div>
       <div className="mt-3.5 flex flex-col gap-2">
@@ -44,9 +45,7 @@ export function AskQuantora({ open, onClose }: { open: boolean; onClose: () => v
           placeholder="Ask anything — nothing is too basic"
           className="flex-1 bg-transparent text-[13.5px] text-[#ECECE8] outline-none placeholder:text-dim"
         />
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5B6ACB" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M4.5 12h14M13 6.5l5.5 5.5L13 17.5" />
-        </svg>
+        <ArrowRight size={15} strokeWidth={1.9} color="#5B6ACB" aria-hidden="true" />
       </div>
     </div>
   );

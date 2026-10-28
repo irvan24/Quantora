@@ -1,5 +1,12 @@
-import PlaceholderPage from "@/components/app/placeholder-page";
+"use client";
+
+import { AppShell } from "@/components/app/app-shell";
+import { JournalView } from "@/components/journal/journal-view";
 
 export default function JournalPage() {
-  return <PlaceholderPage title="Journal" body="A quiet place for decisions and reviews. Coming next." />;
+  return (
+    <AppShell hideHeader>
+      <JournalView />
+    </AppShell>
+  );
 }

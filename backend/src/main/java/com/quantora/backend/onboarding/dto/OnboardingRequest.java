@@ -8,11 +8,14 @@ import com.quantora.backend.onboarding.enums.InvestingApproach;
 import com.quantora.backend.onboarding.enums.InvestingExperience;
 import com.quantora.backend.onboarding.enums.InvestmentGoal;
 import com.quantora.backend.onboarding.enums.InvestmentKnowledge;
+import com.quantora.backend.onboarding.enums.ReviewCadence;
 import com.quantora.backend.onboarding.enums.RiskReaction;
 import com.quantora.backend.onboarding.enums.TimeHorizon;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,10 +33,21 @@ public record OnboardingRequest(
         RiskReaction riskReaction,
         InvestingExperience experience,
         List<InvestmentKnowledge> knowledge,
-        InvestingApproach approach
+        InvestingApproach approach,
+        @Valid AllocationSnapshot allocation,
+        @Size(max = 20, message = "You can save at most 20 rules")
+        List<@Size(max = 280, message = "Each rule must be at most 280 characters") String> rules,
+        ReviewCadence reviewCadence
 ) {
     public OnboardingRequest {
         knowledge = knowledge == null ? List.of() : knowledge.stream().distinct().toList();
+        rules = rules == null
+                ? List.of()
+                : rules.stream()
+                        .map(String::trim)
+                        .filter(rule -> !rule.isBlank())
+                        .distinct()
+                        .toList();
     }
 
     @AssertTrue(message = "NOT_SURE cannot be combined with other knowledge topics")

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { ArrowDown, Check } from "lucide-react";
 import { OptionCard, OptionChip } from "@/components/onboarding/option-card";
 import { useAuth } from "@/components/auth/auth-provider";
 import {
@@ -345,9 +346,7 @@ export function OnboardingWizard({ firstName }: OnboardingWizardProps) {
                     <div className="text-[12.5px] text-[#949BA5]">You invested</div>
                     <div className="mt-1 text-[22px] font-light text-[#949BA5]">€10,000</div>
                   </div>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#949BA5" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M12 4v16M6 14l6 6 6-6" />
-                  </svg>
+                  <ArrowDown size={24} strokeWidth={1.6} color="#949BA5" aria-hidden="true" />
                   <div>
                     <div className="text-[12.5px] text-[#949BA5]">Now worth</div>
                     <div className="mt-1 text-[28px] font-normal text-[#F2F3F5]">€7,500</div>
@@ -557,9 +556,7 @@ function PlanSummary({
         <div className="mt-4 flex flex-col gap-[11px]">
           {["Goal", "Time horizon", "Contribution", "How you react to losses", "Approach"].map((item) => (
             <div key={item} className="flex items-center gap-3 text-[13.5px] text-[#F2F3F5]">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6FA383" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M4 12.5 9.5 18 20 6.5" />
-              </svg>
+              <Check size={13} strokeWidth={2.6} color="#6FA383" aria-hidden="true" />
               {item}
             </div>
           ))}

@@ -9,6 +9,7 @@ import com.quantora.backend.onboarding.enums.InvestingApproach;
 import com.quantora.backend.onboarding.enums.InvestingExperience;
 import com.quantora.backend.onboarding.enums.InvestmentGoal;
 import com.quantora.backend.onboarding.enums.InvestmentKnowledge;
+import com.quantora.backend.onboarding.enums.ReviewCadence;
 import com.quantora.backend.onboarding.enums.RiskReaction;
 import com.quantora.backend.onboarding.enums.TimeHorizon;
 
@@ -28,8 +29,12 @@ public record OnboardingResponse(
         InvestingExperience experience,
         List<InvestmentKnowledge> knowledge,
         InvestingApproach approach,
+        AllocationSnapshot allocation,
+        List<String> rules,
+        ReviewCadence reviewCadence,
         boolean completed,
-        LocalDateTime completedAt
+        LocalDateTime completedAt,
+        LocalDateTime updatedAt
 ) {
 
     public static OnboardingResponse empty() {
@@ -45,7 +50,11 @@ public record OnboardingResponse(
                 null,
                 List.of(),
                 null,
+                null,
+                List.of(),
+                null,
                 false,
+                null,
                 null
         );
     }
@@ -63,8 +72,22 @@ public record OnboardingResponse(
                 profile.getExperience(),
                 List.copyOf(profile.getKnowledge()),
                 profile.getApproach(),
+                allocationFrom(profile),
+                List.copyOf(profile.getRules() == null ? List.of() : profile.getRules()),
+                profile.getReviewCadence(),
                 profile.isCompleted(),
-                profile.getCompletedAt()
+                profile.getCompletedAt(),
+                profile.getUpdatedAt()
         );
+    }
+
+    private static AllocationSnapshot allocationFrom(OnboardingProfile profile) {
+        AllocationSnapshot allocation = new AllocationSnapshot(
+                profile.getAllocationEtfs(),
+                profile.getAllocationStocks(),
+                profile.getAllocationBonds(),
+                profile.getAllocationCash()
+        );
+        return allocation.isEmpty() ? null : allocation;
     }
 }

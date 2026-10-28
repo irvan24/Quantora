@@ -1,6 +1,7 @@
 package com.quantora.backend.onboarding.service;
 
 import com.quantora.backend.auth.exception.UnauthorizedException;
+import com.quantora.backend.onboarding.dto.AllocationSnapshot;
 import com.quantora.backend.onboarding.dto.OnboardingRequest;
 import com.quantora.backend.onboarding.dto.OnboardingResponse;
 import com.quantora.backend.onboarding.entity.OnboardingProfile;
@@ -16,7 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -48,6 +51,7 @@ public class OnboardingService {
                 .orElseGet(() -> OnboardingProfile.builder()
                         .user(user)
                         .knowledge(new LinkedHashSet<>())
+                        .rules(new ArrayList<>())
                         .build());
 
         apply(profile, request);
@@ -86,6 +90,16 @@ public class OnboardingService {
         knowledge.clear();
         knowledge.addAll(request.knowledge());
 
+        applyAllocation(profile, request.allocation());
+        List<String> rules = profile.getRules();
+        if (rules == null) {
+            rules = new ArrayList<>();
+            profile.setRules(rules);
+        }
+        rules.clear();
+        rules.addAll(request.rules());
+        profile.setReviewCadence(request.reviewCadence());
+
         boolean completed = isComplete(profile);
         profile.setCompleted(completed);
         if (completed) {
@@ -109,6 +123,20 @@ public class OnboardingService {
             return null;
         }
         return request.contributionPeriod();
+    }
+
+    private void applyAllocation(OnboardingProfile profile, AllocationSnapshot allocation) {
+        if (allocation == null || allocation.isEmpty()) {
+            profile.setAllocationEtfs(null);
+            profile.setAllocationStocks(null);
+            profile.setAllocationBonds(null);
+            profile.setAllocationCash(null);
+            return;
+        }
+        profile.setAllocationEtfs(allocation.etfs());
+        profile.setAllocationStocks(allocation.stocks());
+        profile.setAllocationBonds(allocation.bonds());
+        profile.setAllocationCash(allocation.cash());
     }
 
     private boolean isComplete(OnboardingProfile profile) {

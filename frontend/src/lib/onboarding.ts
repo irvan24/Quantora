@@ -46,6 +46,15 @@ export type InvestingApproach =
   | "RESEARCH_COMPANIES"
   | "NOT_SURE";
 
+export type ReviewCadence = "EVERY_SIX_MONTHS" | "YEARLY" | "ON_LIFE_CHANGE";
+
+export type AllocationSnapshot = {
+  etfs: number;
+  stocks: number;
+  bonds: number;
+  cash: number;
+};
+
 export type OnboardingAnswers = {
   goal: InvestmentGoal | null;
   timeHorizon: TimeHorizon | null;
@@ -59,6 +68,9 @@ export type OnboardingAnswers = {
   experience: InvestingExperience | null;
   knowledge: InvestmentKnowledge[];
   approach: InvestingApproach | null;
+  allocation: AllocationSnapshot | null;
+  rules: string[];
+  reviewCadence: ReviewCadence | null;
 };
 
 export type OnboardingResponse = {
@@ -73,8 +85,12 @@ export type OnboardingResponse = {
   experience: InvestingExperience | null;
   knowledge: InvestmentKnowledge[] | null;
   approach: InvestingApproach | null;
+  allocation: AllocationSnapshot | null;
+  rules: string[] | null;
+  reviewCadence: ReviewCadence | null;
   completed: boolean;
   completedAt: string | null;
+  updatedAt: string | null;
 };
 
 export const QUESTION_COUNT = 7;
@@ -92,6 +108,9 @@ export const emptyAnswers = (): OnboardingAnswers => ({
   experience: null,
   knowledge: [],
   approach: null,
+  allocation: null,
+  rules: [],
+  reviewCadence: null,
 });
 
 export function answersFromResponse(profile: OnboardingResponse): OnboardingAnswers {
@@ -110,6 +129,9 @@ export function answersFromResponse(profile: OnboardingResponse): OnboardingAnsw
     experience: profile.experience,
     knowledge: profile.knowledge ?? [],
     approach: profile.approach,
+    allocation: profile.allocation,
+    rules: profile.rules ?? [],
+    reviewCadence: profile.reviewCadence,
   };
 }
 
@@ -185,6 +207,9 @@ export function toRequest(answers: OnboardingAnswers) {
     experience: answers.experience,
     knowledge: answers.knowledge,
     approach: answers.approach,
+    allocation: answers.allocation,
+    rules: answers.rules,
+    reviewCadence: answers.reviewCadence,
   };
 }
 
@@ -322,7 +347,7 @@ export const APPROACH_OPTIONS: { value: InvestingApproach; title: string; subtit
   { value: "NOT_SURE", title: "I'm not sure yet", subtitle: "I want to learn the differences before deciding." },
 ];
 
-const GOAL_SUMMARY: Record<InvestmentGoal, string> = {
+export const GOAL_SUMMARY: Record<InvestmentGoal, string> = {
   BUILD_WEALTH: "Build wealth over the long term",
   FUTURE_PURCHASE: "Prepare for a future purchase",
   ADDITIONAL_INCOME: "Generate additional income",
@@ -330,7 +355,7 @@ const GOAL_SUMMARY: Record<InvestmentGoal, string> = {
   STILL_FIGURING_OUT: "Still figuring it out",
 };
 
-const HORIZON_SUMMARY: Record<TimeHorizon, string> = {
+export const HORIZON_SUMMARY: Record<TimeHorizon, string> = {
   LESS_THAN_3_YEARS: "Less than 3 years",
   THREE_TO_FIVE_YEARS: "3–5 years",
   FIVE_TO_TEN_YEARS: "5–10 years",
@@ -346,22 +371,22 @@ const CONTRIB_SUMMARY: Record<ContributionPlan, string> = {
   DONT_KNOW_YET: "Not decided yet",
 };
 
-const PERIOD_SUMMARY: Record<ContributionPeriod, string> = {
+export const PERIOD_SUMMARY: Record<ContributionPeriod, string> = {
   MONTH: "month",
   QUARTER: "quarter",
   YEAR: "year",
 };
 
-const EXP_SUMMARY: Record<InvestingExperience, string> = {
+export const EXP_SUMMARY: Record<InvestingExperience, string> = {
   COMPLETELY_NEW: "Complete beginner",
   KNOW_BASICS: "Knows the basics",
   ALREADY_INVESTING: "Already investing",
   COMFORTABLE_RESEARCHING: "Comfortable researching",
 };
 
-const APPROACH_SUMMARY: Record<InvestingApproach, string> = {
+export const APPROACH_SUMMARY: Record<InvestingApproach, string> = {
   SIMPLE_ETFS: "Diversified funds and ETFs",
-  MIX_ETFS_AND_STOCKS: "ETFs + individual companies",
+  MIX_ETFS_AND_STOCKS: "ETFs + selected companies",
   RESEARCH_COMPANIES: "Researches companies",
   NOT_SURE: "Undecided — learning first",
 };

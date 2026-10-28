@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
   type AuthUser,
+  fetchCurrentUser,
   login as loginRequest,
   logout as logoutRequest,
   patchSessionUser,
@@ -31,8 +32,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setUser(readSession()?.user ?? null);
-    setReady(true);
+    let cancelled = false;
+    (async () => {
+      if (!readSession()) {
+        setReady(true);
+        return;
+      }
+      try {
+        const remote = await fetchCurrentUser();
+        if (!cancelled) {
+          setUser(patchSessionUser(remote) ?? remote);
+        }
+      } catch {
+        if (!cancelled) {
+          setUser(readSession()?.user ?? null);
+        }
+      } finally {
+        if (!cancelled) {
+          setReady(true);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const value = useMemo<AuthContextValue>(

@@ -1,27 +1,85 @@
+# Production-safe defaults. Anything environment-specific MUST come from the
+# environment (12-factor). There is NO default Spring profile: a deploy that
+# forgets SPRING_PROFILES_ACTIVE fails fast on missing DB/JWT/CORS secrets
+# instead of silently loading application-dev.yaml.
+# Local development: SPRING_PROFILES_ACTIVE=dev
 spring:
   application:
     name: quantora-backend
 
+  flyway:
+    enabled: ${FLYWAY_ENABLED:false}
+    locations: classpath:db/migration
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/quantora
-    username: postgres
-    password: postgres
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
+    open-in-view: false
     hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+      # Never let Hibernate mutate a production schema; schema changes must be
+      # explicit (see SECURITY_AUDIT.md - migrations).
+      ddl-auto: validate
+    show-sql: false
+
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-exception: false
+  # Set to "native" (or "framework") when running behind a TLS-terminating
+  # reverse proxy so that client IPs, scheme and HSTS work with X-Forwarded-*.
+  forward-headers-strategy: ${FORWARD_HEADERS_STRATEGY:none}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
 
 jwt:
-  secret: ${JWT_SECRET:quantora-dev-secret-key-change-in-production-min-32-chars}
+  secret: ${JWT_SECRET}
   expiration-ms: ${JWT_EXPIRATION_MS:900000}
   refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
 
 cors:
-  allowed-origin-patterns:
-    - http://localhost:*
-    - http://127.0.0.1:*
+  # Comma separated list of exact browser origins, e.g. https://app.quantora.com
+  allowed-origin-patterns: ${CORS_ALLOWED_ORIGINS}
+
+quantora:
+  auth:
+    cookies:
+      enabled: ${AUTH_COOKIES_ENABLED:false}
+      secure: ${AUTH_COOKIES_SECURE:false}
+      same-site: ${AUTH_COOKIES_SAME_SITE:Lax}
+    password-reset:
+      expiration-ms: ${PASSWORD_RESET_EXPIRATION_MS:3600000}
+      expose-token-in-response: ${PASSWORD_RESET_EXPOSE_TOKEN:false}
+      link-base-url: ${PASSWORD_RESET_LINK_BASE_URL:}
+  security:
+    max-request-body-bytes: ${MAX_REQUEST_BODY_BYTES:65536}
+    rate-limit:
+      enabled: ${RATE_LIMIT_ENABLED:true}
+      window: ${RATE_LIMIT_WINDOW:1m}
+      auth-requests-per-ip: ${RATE_LIMIT_AUTH_PER_IP:30}
+      login-attempts-per-email: ${RATE_LIMIT_LOGIN_PER_EMAIL:10}
+  market-data:
+    # fmp today; stub in tests. Swap MARKET_DATA_PROVIDER without changing callers.
+    provider: ${MARKET_DATA_PROVIDER:fmp}
+    cache-ttl: ${MARKET_DATA_CACHE_TTL:6h}
+    fmp:
+      base-url: ${FMP_BASE_URL:https://financialmodelingprep.com/stable}
+      api-key: ${FMP_API_KEY:}
+  mail:
+    # resend today; stub in tests. Swap MAIL_PROVIDER without changing callers.
+    provider: ${MAIL_PROVIDER:resend}
+    resend:
+      base-url: ${RESEND_BASE_URL:https://api.resend.com}
+      api-key: ${RESEND_API_KEY:}
+      from-email: ${RESEND_FROM_EMAIL:onboarding@resend.dev}
