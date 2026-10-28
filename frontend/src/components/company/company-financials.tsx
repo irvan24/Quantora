@@ -57,12 +57,12 @@ export function CompanyFinancials({ symbol }: { symbol: string }) {
 
   useEffect(() => {
     const controller = new AbortController();
-    setLoading(true);
-    setError(null);
-    setFilingsError(null);
-    setAnnual(null);
-    setQuarterly(null);
     (async () => {
+      setLoading(true);
+      setError(null);
+      setFilingsError(null);
+      setAnnual(null);
+      setQuarterly(null);
       try {
         const profile = await getInstrument(symbol);
         if (controller.signal.aborted) {

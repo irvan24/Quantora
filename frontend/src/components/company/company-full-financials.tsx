@@ -72,10 +72,10 @@ export function CompanyFullFinancials({ symbol }: { symbol: string }) {
 
   useEffect(() => {
     const controller = new AbortController();
-    setLoading(true);
-    setError(null);
-    setFilingsError(null);
     (async () => {
+      setLoading(true);
+      setError(null);
+      setFilingsError(null);
       let loaded = false;
       try {
         const profile = await getInstrument(symbol);

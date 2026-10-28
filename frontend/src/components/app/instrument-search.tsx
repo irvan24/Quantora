@@ -59,10 +59,12 @@ export function InstrumentSearch({
   useEffect(() => {
     const q = query.trim();
     if (q.length < MIN_QUERY_LENGTH) {
-      setResults([]);
-      setLoading(false);
-      setOpen(false);
-      setError(null);
+      (() => {
+        setResults([]);
+        setLoading(false);
+        setOpen(false);
+        setError(null);
+      })();
       return;
     }
 

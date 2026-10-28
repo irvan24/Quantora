@@ -35,11 +35,11 @@ export function CompanyOverview({ symbol }: { symbol: string }) {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
-    setCompany(null);
-    setPrices([]);
     (async () => {
+      setLoading(true);
+      setError(null);
+      setCompany(null);
+      setPrices([]);
       try {
         const data = await getInstrument(symbol);
         if (cancelled) {

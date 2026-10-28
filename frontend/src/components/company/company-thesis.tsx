@@ -64,9 +64,9 @@ export function CompanyThesis({ symbol }: { symbol: string }) {
 
   useEffect(() => {
     const controller = new AbortController();
-    setLoading(true);
-    setError(null);
     (async () => {
+      setLoading(true);
+      setError(null);
       try {
         const profile = await getInstrument(symbol);
         if (controller.signal.aborted) {

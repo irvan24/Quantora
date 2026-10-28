@@ -30,15 +30,6 @@ const INFO: Record<string, { title: string; text: string }> = {
 
 type MetricKey = "pe" | "pfcf" | "ev";
 
-type YearPoint = {
-  year: number;
-  date: string;
-  label: string;
-  pe: number | null;
-  pfcf: number | null;
-  ev: number | null;
-};
-
 const METRICS: { key: MetricKey; label: string; short: string }[] = [
   { key: "pe", label: "P/E", short: "P/E" },
   { key: "pfcf", label: "Price / FCF", short: "P/FCF" },
@@ -58,10 +49,10 @@ export function CompanyValuation({ symbol }: { symbol: string }) {
 
   useEffect(() => {
     const controller = new AbortController();
-    setLoading(true);
-    setError(null);
-    setCompany(null);
     (async () => {
+      setLoading(true);
+      setError(null);
+      setCompany(null);
       try {
         const profile = await getInstrument(symbol);
         if (controller.signal.aborted) {
